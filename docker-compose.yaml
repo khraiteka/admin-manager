@@ -1,0 +1,67 @@
+version: "3"
+services:
+  # mongo db
+  nosql-db:
+    image: mongo
+    ports:
+      - "27018:27017"
+    container_name: nosql-db
+    volumes:
+      - ./db/:/data/db
+    networks:
+      - backend
+
+  # posts-services
+  posts-services:
+    build:
+      dockerfile: Dockerfile
+      context: ./posts-services
+    container_name: posts-services
+    ports:
+      - "3000:3000"
+    restart: always
+    depends_on:
+      - "nosql-db"
+    volumes:
+      - ./:/app
+      - /app/posts-services/node_modules
+    networks:
+      - backend
+    # env_file:
+    #   - ./posts-services/.env.dev
+
+  # category-services
+  category-services:
+    build:
+      dockerfile: Dockerfile
+      context: ./category-services
+    container_name: category-services
+    ports:
+      - "3001:3001"
+    restart: always
+    depends_on:
+      - "nosql-db"
+    volumes:
+      - ./:/app
+      - /app/category-services/node_modules
+    networks:
+      - backend
+    # env_file:
+    #   - ./category-services/.env.dev
+
+  # gateway-config
+  nginx-proxy:
+    build:
+      dockerfile: Dockerfile
+      context: ./gateway-config
+    depends_on:
+      - posts-services
+      - category-services
+    ports:
+      - 8000:80
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
