@@ -37,4 +37,5 @@ docker-compose up -d
 ```
 http://localhost:8000/category
 http://localhost:8000/posts
+http://localhost:8000/users
 ```
