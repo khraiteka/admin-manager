@@ -7,7 +7,37 @@ services:
       - "27018:27017"
     container_name: nosql-db
     volumes:
-      - ./db/:/data/db
+      - ./database/mongo:/data/db
+    networks:
+      - backend
+
+  mysql-db:
+    container_name: "mysql-db"
+    platform: linux/amd64
+    image: mysql:5.7.31
+    command: --default-authentication-plugin=mysql_native_password --sql_mode=NO_ENGINE_SUBSTITUTION,NO_AUTO_CREATE_USER --explicit_defaults_for_timestamp
+    restart: always
+    volumes:
+      - ./database/mysql:/data/db
+    ports:
+      - "3333:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - TZ=Asia/Ho_Chi_Minh
+    networks:
+      - backend
+
+  # gateway-config
+  nginx-proxy:
+    build:
+      dockerfile: Dockerfile
+      context: ./gateway-config
+    container_name: gateway
+    depends_on:
+      - posts-services
+      - category-services
+    ports:
+      - 8000:80
     networks:
       - backend
 
@@ -49,18 +79,24 @@ services:
     # env_file:
     #   - ./category-services/.env.dev
 
-  # gateway-config
-  nginx-proxy:
+  # users-services
+  users-services:
     build:
       dockerfile: Dockerfile
-      context: ./gateway-config
-    depends_on:
-      - posts-services
-      - category-services
+      context: ./users-services
+    container_name: users-services
     ports:
-      - 8000:80
+      - "3002:3002"
+    restart: always
+    depends_on:
+      - "mysql-db"
+    volumes:
+      - ./:/app
+      - /app/users-services/node_modules
     networks:
       - backend
+    # env_file:
+    #   - ./users-services/.env.dev
 
 networks:
   backend:
