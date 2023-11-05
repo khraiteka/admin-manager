@@ -5,7 +5,9 @@
 ### Project Structure :
 
 ├─ category-services </br>
-├─ datbase </br>
+├─ comments-services </br>
+├─ favourites-services </br>
+├─ database </br>
 ├─ gateway-config </br>
 ├─ posts-services </br>
 ├─ users-services </br>
