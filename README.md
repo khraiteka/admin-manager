@@ -5,9 +5,10 @@
 ### Project Structure :
 
 ├─ category-services </br>
-├─ db </br>
+├─ datbase </br>
 ├─ gateway-config </br>
 ├─ posts-services </br>
+├─ users-services </br>
 ├─.gitignore </br>
 ├─ docker-compose.yml </br>
 └─ README.md </br>
@@ -36,4 +37,5 @@ docker-compose up -d
 ```
 http://localhost:8000/category
 http://localhost:8000/posts
+http://localhost:8000/users
 ```
