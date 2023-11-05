@@ -2,7 +2,8 @@ version: "3"
 services:
   # mongo db
   nosql-db:
-    image: mongo
+    image: mongo:5
+    platform: linux/amd64
     ports:
       - "27018:27017"
     container_name: nosql-db
@@ -15,13 +16,13 @@ services:
     container_name: "mysql-db"
     platform: linux/amd64
     image: mysql:5.7.31
-    command: --default-authentication-plugin=mysql_native_password --sql_mode=NO_ENGINE_SUBSTITUTION,NO_AUTO_CREATE_USER --explicit_defaults_for_timestamp
-    restart: always
     volumes:
-      - ./database/mysql:/data/db
+      - ./database/mysql:/var/lib/mysql
     ports:
       - "3333:3306"
     environment:
+      - MYSQL_DATABASE=admin_blog
+      - MYSQL_ROOT_PASSWORD=123456
       - MYSQL_ROOT_PASSWORD=root
       - TZ=Asia/Ho_Chi_Minh
     networks:
@@ -29,6 +30,7 @@ services:
 
   # gateway-config
   nginx-proxy:
+    platform: linux/amd64
     build:
       dockerfile: Dockerfile
       context: ./gateway-config
@@ -36,6 +38,9 @@ services:
     depends_on:
       - posts-services
       - category-services
+      - users-services
+      - favourites-services
+      - comments-services
     ports:
       - 8000:80
     networks:
@@ -43,6 +48,7 @@ services:
 
   # posts-services
   posts-services:
+    platform: linux/amd64
     build:
       dockerfile: Dockerfile
       context: ./posts-services
@@ -62,6 +68,7 @@ services:
 
   # category-services
   category-services:
+    platform: linux/amd64
     build:
       dockerfile: Dockerfile
       context: ./category-services
@@ -81,6 +88,7 @@ services:
 
   # users-services
   users-services:
+    platform: linux/amd64
     build:
       dockerfile: Dockerfile
       context: ./users-services
@@ -97,6 +105,46 @@ services:
       - backend
     # env_file:
     #   - ./users-services/.env.dev
+
+  # favourites-services
+  favourites-services:
+    platform: linux/amd64
+    build:
+      dockerfile: Dockerfile
+      context: ./favourites-services
+    container_name: favourites-services
+    ports:
+      - "3003:3003"
+    restart: always
+    depends_on:
+      - "mysql-db"
+    volumes:
+      - ./:/app
+      - /app/favourites-services/node_modules
+    networks:
+      - backend
+    # env_file:
+    #   - ./favourites-services/.env.dev
+
+  # comments-services
+  comments-services:
+    platform: linux/amd64
+    build:
+      dockerfile: Dockerfile
+      context: ./comments-services
+    container_name: comments-services
+    ports:
+      - "3004:3004"
+    restart: always
+    depends_on:
+      - "mysql-db"
+    volumes:
+      - ./:/app
+      - /app/comments-services/node_modules
+    networks:
+      - backend
+    # env_file:
+    #   - ./comments-services/.env.dev
 
 networks:
   backend:
